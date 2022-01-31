@@ -20,8 +20,8 @@ function setup() {
     world = engine.world;
     // textFont(helventicaFont);
     // boundaries.push(new Boundary(width / 2, height - 10, width, 20, 0));
-    let pegSize = 10;
-    for(let i = 2; i < 16; i++) {
+    let pegSize = 5;
+    for(let i = 2; i < 39; i++) {
       for(let j = 0; j < i; j++) {
         pegs.push(new Peg(width/2 - pegSize * i * 2 + pegSize * j * 4 + pegSize * 2, i * pegSize * 4, pegSize));
       }
@@ -38,7 +38,7 @@ function draw() {
   
   stroke(100, 100, 255);
   for(let i = 0; i < graphHeights.length-1; i++) {
-    line(40*i, height-graphHeights[i], 40*i+40, height-graphHeights[i+1]);
+    line(15*i, height-graphHeights[i], 15*i+15, height-graphHeights[i+1]);
   }
   boundaries.forEach((item, i) => {
     item.show();
@@ -46,25 +46,31 @@ function draw() {
   pegs.forEach((item, i) => {
       item.show();
   });
+  let toRemove = [];
   balls.forEach((item, i) => {
       item.show();
       if (item.isOffScreen()) {
           balls.splice(i, 1);
-          item.removeFromWorld();
-          graphHeights[Math.floor((item.body.position.x + 20)/40)]+=2;
+          toRemove.push(item);
+          // item.removeFromWorld();
+          graphHeights[Math.floor((item.body.position.x + 5)/15)]++;
       }
+  });
+
+  toRemove.forEach(item => {
+    item.removeFromWorld();
   });
 
   Engine.update(engine);
 
-  if(frameCount%20==0) {
-    balls.push(new Ball(width/2 + random(-10, 10), 0, 10, random(0, 255)));
+  if(frameCount%10==0) {
+    balls.push(new Ball(width/2 + random(-4, 4), 0, 5, random(0, 255)));
   }
 }
 
   
   function mousePressed() {
-    balls.push(new Ball(mouseX, mouseY, 20, random(0, 255)));
+    balls.push(new Ball(mouseX, mouseY, 5, random(0, 255)));
   }
 
   //   this.mouseReleased = function() {
@@ -172,7 +178,7 @@ function Peg(x, y, r) {
 
   this.show = function() {
     noStroke();
-    fill(100);
+    fill(200);
     ellipse(this.x, this.y, 2*this.r);
   }
   
