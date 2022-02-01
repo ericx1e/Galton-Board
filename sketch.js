@@ -9,6 +9,7 @@ var balls = [];
 var boundaries = [];
 var pegs = [];
 var graphHeights = [];
+let ballSize = 5;
 
 function setup() {
     canvas = createCanvas(window.innerWidth, window.innerHeight);
@@ -20,12 +21,14 @@ function setup() {
     world = engine.world;
     // textFont(helventicaFont);
     // boundaries.push(new Boundary(width / 2, height - 10, width, 20, 0));
-    let pegSize = 5;
-    for(let i = 2; i < 39; i++) {
-      for(let j = 0; j < i; j++) {
+    let pegSize = ballSize;
+    for(let i = 3; i < height/pegSize/4; i++) {
+      for(let j = -1; j < i + 1; j++) {
         pegs.push(new Peg(width/2 - pegSize * i * 2 + pegSize * j * 4 + pegSize * 2, i * pegSize * 4, pegSize));
       }
     }
+    boundaries.push(new Boundary(width/2 - pegSize * 12 - pegSize, pegSize * 5, pegSize * 22, 5, PI/5));
+    boundaries.push(new Boundary(width/2 + pegSize * 12 + pegSize, pegSize * 5, pegSize * 22, 5, -PI/5));
 }
 
 function windowResized() {
@@ -35,11 +38,6 @@ function windowResized() {
 
 function draw() {
   background(255);
-  
-  stroke(100, 100, 255);
-  for(let i = 0; i < graphHeights.length-1; i++) {
-    line(15*i, height-graphHeights[i], 15*i+15, height-graphHeights[i+1]);
-  }
   boundaries.forEach((item, i) => {
     item.show();
   });
@@ -53,7 +51,7 @@ function draw() {
           balls.splice(i, 1);
           toRemove.push(item);
           // item.removeFromWorld();
-          graphHeights[Math.floor((item.body.position.x + 5)/15)]++;
+          graphHeights[Math.floor((item.body.position.x + ballSize * 2)/(ballSize*4))]+=0.5;
       }
   });
 
@@ -63,75 +61,53 @@ function draw() {
 
   Engine.update(engine);
 
-  if(frameCount%10==0) {
-    balls.push(new Ball(width/2 + random(-4, 4), 0, 5, random(0, 255)));
+  if(frameCount%7==0) {
+    balls.push(new Ball(width/2 , 0, 5, random(0, 255)));
   }
+
+
+  strokeWeight(3);
+
+  
+  for(let i = 0; i < graphHeights.length-1; i++) {
+    stroke(150, 150, 255, 100);
+    line(ballSize*4*i, height-graphHeights[i], ballSize*4*i+ballSize*4, height-graphHeights[i+1]);
+    line(ballSize*4*i, height, ballSize*4*i, height-graphHeights[i]);
+    line(ballSize*4*i + ballSize * 2, height, ballSize*4*i + ballSize * 2, height-((graphHeights[i] + graphHeights[i+1])/2));
+    noStroke();
+    fill(150, 150, 255, 100);
+    ellipse(ballSize*4*i, height-graphHeights[i], 5);
+  }
+  stroke(150, 150, 255, 100);
+  strokeWeight(1);
+
+  num = 0;
+  dem = 0;
+  for(let i = 0; i < graphHeights.length; i++) {
+    num += i * graphHeights[i] * ballSize * 4;
+    dem += graphHeights[i];
+  }
+
+  mean = num/dem;
+  line(mean, 0, mean, height);
+
+  fill(200);
+  noStroke();
+  frameRate(100);
+  textSize(40);
+  textAlign(CENTER, CENTER);
+  text("FPS: " + Math.floor(frameRate()), width * 3 / 4, height / 4);
 }
 
   
-  function mousePressed() {
-    balls.push(new Ball(mouseX, mouseY, 5, random(0, 255)));
-  }
-
-  //   this.mouseReleased = function() {
-  //     mouseDown = false;
-  //     if(mouseX < deadZoneX && mouseY < deadZoneY) {
-  //       // key = 'none';
-  //       return;
-  //     }
-  //     if (mode == '3' && mouseXStart > 0 && mouseYStart > 0) {
-  //       let x = mouseX;
-  //       let y = mouseY;
-  
-  //       let length = dist(x, y, mouseXStart, mouseYStart);
-  
-  //       let angle = atan2(y - mouseYStart, x - mouseXStart);
-  
-  //       boundaries.push(new Boundary((x + mouseXStart) / 2, (y + mouseYStart) / 2, length, 20, angle));
-  
-  //     }
-  //   }
-  
-  //   this.mouseDragged = function() {
-  //     if(mouseX < deadZoneX && mouseY < deadZoneY) {
-  //       // key = 'none';
-  //       return;
-  //     }
-  
-  //     if (mode == '4') {
-  //       if (frameCount % 2 == 0) {
-  //         boxes.push(new Box(sliderOptions, mouseX, mouseY, random(5, 30), random(5, 30), random(0, 255)));
-  //         balls.push(new Ball(sliderOptions, mouseX, mouseY, random(2.5, 15), random(0, 255)));
-  //       }
-  //     }
-  //   }
-  
-  //   this.keyPressed = function() {
-  //     if (key == 'r') {
-  //       boxes.forEach((item, i) => {
-  //         item.removeFromWorld();
-  //       });
-  
-  //       boxes = [];
-  
-  //       balls.forEach((item, i) => {
-  //         item.removeFromWorld();
-  //       });
-  //       balls = [];
-  
-  //       for (var i = 1; i < boundaries.length; i) {
-  
-  //         boundaries[i].removeFromWorld();
-  //         boundaries.splice(i, 1);
-  //       }
-  //     }
-  //   }
-  // }
+function mousePressed() {
+  balls.push(new Ball(mouseX, mouseY, 5, random(0, 255)));
+}
 
 function Ball(x, y, r, hue) {
   options = {
     friction: 0,
-    restitution: 0.3
+    restitution: 0.7
   }
   this.body = Bodies.circle(x, y, r, options);
   this.r = r;
@@ -208,7 +184,7 @@ function Boundary(x, y, w, h, a) {
       rotate(angle);
       rectMode(CENTER);
       noStroke();
-      fill(100);
+      fill(200);
       rect(0, 0, this.w, this.h);
       pop();
     }
